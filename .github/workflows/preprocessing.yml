@@ -1,0 +1,74 @@
+name: Automated Nutrition Preprocessing
+
+# Trigger workflow
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'nutrition.csv'
+      - 'preprocessing/automate_nutrition_preprocessing.py'
+  workflow_dispatch:  # Manual trigger
+
+# Add permissions for pushing
+permissions:
+  contents: write
+
+jobs:
+  preprocessing:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Step 1: Checkout repository
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        
+      # Step 2: Setup Python
+      - name: Setup Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          
+      # Step 3: Install dependencies
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas numpy scikit-learn matplotlib seaborn yellowbrick
+          
+      # Step 4: Run preprocessing script
+      - name: Run Preprocessing Script
+        run: |
+          cd preprocessing
+          python automate_nutrition_preprocessing.py
+          
+      # Step 5: Verify output file
+      - name: Verify Preprocessing Output
+        run: |
+          if [ -f "preprocessing/nutrition_preprocessing.csv" ]; then
+            echo "File preprocessing berhasil dibuat"
+            echo "Ukuran file: $(wc -l < preprocessing/nutrition_preprocessing.csv) baris"
+          else
+            echo "File preprocessing tidak ditemukan"
+            exit 1
+          fi
+          
+      # Step 6: Upload artifact
+      - name: Upload Preprocessing Result
+        uses: actions/upload-artifact@v4
+        with:
+          name: preprocessed-nutrition-data
+          path: preprocessing/nutrition_preprocessing.csv
+          retention-days: 30
+          
+      # Step 7: Commit and push hasil preprocessing
+      - name: Commit Preprocessing Results
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add preprocessing/nutrition_preprocessing.csv
+          git diff --quiet && git diff --staged --quiet || git commit -m "chore: auto-update nutrition preprocessing at $(date)"
+          
+      # Step 8: Push Changes
+      - name: Push Changes
+        run: |
+          git push
