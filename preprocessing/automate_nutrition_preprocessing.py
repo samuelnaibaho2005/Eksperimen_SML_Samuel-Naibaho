@@ -282,7 +282,7 @@ if __name__ == "__main__":
         df_normalized, scaler, numeric_cols, metadata = preprocessing_pipeline(
             input_file, 
             output_file,
-            columns_to_drop=['id', 'image'],
+            columns_to_drop=['id', 'image', 'name'],
             numeric_columns=['calories', 'proteins', 'fat', 'carbohydrate']
         )
         
