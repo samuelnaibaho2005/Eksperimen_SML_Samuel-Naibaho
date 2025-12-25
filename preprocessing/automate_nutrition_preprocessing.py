@@ -39,6 +39,9 @@ def check_missing_values(df):
         print("Ada missing values :")
         print(missing[missing > 0])
         print()
+        # Action: Drop missing values untuk memastikan data bersih
+        df.dropna(inplace=True)
+        print("  -> Missing values telah dihapus.")
     return df
 
 
@@ -64,6 +67,10 @@ def check_duplicates(df):
             if dup_in_col > 0:
                 print(f"  • Duplikat di kolom '{col}': {dup_in_col}")
     print()
+    
+    if duplicates > 0:
+        df.drop_duplicates(inplace=True)
+        print(f"  -> {duplicates} baris duplikat telah dihapus.")
     return df
 
 
@@ -136,8 +143,9 @@ def normalize_features(df, numeric_columns=None):
     # Fit dan transform
     scaled_values = min_max_scaler.fit_transform(df[numeric_cols])
     
-    # Buat DataFrame baru dengan nilai yang sudah dinormalisasi
-    df_normalized = pd.DataFrame(scaled_values, columns=numeric_cols)
+    # Buat salinan DataFrame dan update nilai kolom numerik
+    df_normalized = df.copy()
+    df_normalized[numeric_cols] = scaled_values
     
     print(f"Normalisasi selesai!")
     print(f"Range setiap kolom (harus 0-1):")
